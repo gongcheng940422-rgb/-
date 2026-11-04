@@ -1,0 +1,33 @@
+
+name: Extract ZIP and Build APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract project files
+        run: |
+          mkdir /tmp/jie
+          unzip -q jie-quit-flutter-source.zip -d /tmp/jie
+          cp -a /tmp/jie/jie_quit_flutter/. .
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Extract Flutter project source"
+          git push
+
+      - name: Start APK build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sleep 5
+          gh workflow run android.yml --ref main
